@@ -1,3 +1,5 @@
+import os
+import openai
 from langchain.graphs.networkx_graph import KnowledgeTriple
 from langchain.llms import OpenAI
 from langchain.indexes import GraphIndexCreator
@@ -5,6 +7,18 @@ from langchain.chains import GraphQAChain
 from langchain.prompts import PromptTemplate
 import networkx as nx
 import matplotlib.pyplot as plt
+
+os.environ["OPENAI_API_KEY"] = "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"
+openai.api_key = os.environ["OPENAI_API_KEY"]
+
+question = "What team won the 2022 champions league?"
+completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", 
+                                          temperature=0, 
+                                          messages=[{"role":"user",
+                                                    "content":question,}],
+                                            max_tokens=1000,)
+
+print(completion["choices"][0]["message"]["content"])
 
 # Knowledge graph
 kg = [
@@ -46,3 +60,6 @@ nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=12)
 # Display the plot
 plt.axis('off')
 plt.show()
+
+chain = GraphQAChain.from_llm(OpenAI(temperature=0), graph=graph, verbose=True)
+chain.run(question)
